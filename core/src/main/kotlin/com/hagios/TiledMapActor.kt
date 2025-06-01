@@ -2,14 +2,15 @@ package com.hagios
 
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.maps.MapObject
 import com.badlogic.gdx.maps.objects.RectangleMapObject
 import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.maps.tiled.TmxMapLoader
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject
 import com.badlogic.gdx.maps.tiled.renderers.OrthoCachedTiledMapRenderer
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
-import com.badlogic.gdx.scenes.scene2d.Stage
 
 
 /**
@@ -18,8 +19,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage
  */
 class TiledMapActor(filename: String?) : Actor() {
     private val tiledMap: TiledMap
-//    private val tiledCamera: OrthographicCamera
+    private val tiledCamera: OrthographicCamera
     private val tiledMapRenderer: OrthoCachedTiledMapRenderer
+    private val shapeRenderer: ShapeRenderer = ShapeRenderer()
 
     /**
      * Loads a Tiled map file (*.tmx) with a given filename
@@ -38,9 +40,10 @@ class TiledMapActor(filename: String?) : Actor() {
 
         tiledMapRenderer = OrthoCachedTiledMapRenderer(tiledMap)
         tiledMapRenderer.setBlending(true)
-//        tiledCamera = OrthographicCamera()
-//        tiledCamera.setToOrtho(false, windowWidth.toFloat(), windowHeight.toFloat())
-//        tiledCamera.update()
+
+        tiledCamera = OrthographicCamera()
+        tiledCamera.setToOrtho(false, windowWidth.toFloat(), windowHeight.toFloat())
+        tiledCamera.update()
 
         this.width = mapWidth.toFloat()
         this.height = mapHeight.toFloat()
@@ -114,30 +117,57 @@ class TiledMapActor(filename: String?) : Actor() {
         super.act(dt)
     }
 
-    /**
-     * Automatically called by Stage; keeps the map camera position in
-     * sync with the stage camera, and renders the map to the screen.
-     */
+//    /**
+//     * Automatically called by Stage; keeps the map camera position in
+//     * sync with the stage camera, and renders the map to the screen.
+//     */
+//    override fun draw(batch: Batch, parentAlpha: Float) {
+//        // adjust tilemap camera to stay in sync with main camera
+//        val mainCamera = getStage().getCamera()
+//
+////        tiledCamera.position.x = mainCamera.position.x + this.x
+////        tiledCamera.position.y = mainCamera.position.y + this.y
+////        tiledCamera.zoom = this.scaleY
+//
+////        tiledCamera.update()
+//        val projection = batch.projectionMatrix.cpy()
+//        val transform = batch.transformMatrix.cpy().trn(x, y, 0f)
+//        val matrix = projection.mul(transform)
+//
+//        println("$width, $height")
+//
+//        tiledMapRenderer.setView(matrix, 0f, 0f, mainCamera.viewportWidth, mainCamera.viewportHeight)
+//
+//        // need the following code to force batch order,
+//        //  otherwise it is batched and rendered last
+//        batch.end()
+//        tiledMapRenderer.render(arrayOf(1).toIntArray())
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+//        shapeRenderer.rect(x, y, width * transform.scaleX, height * transform.scaleY)
+//        shapeRenderer.end()
+//        batch.begin()
+//    }
+
+
     override fun draw(batch: Batch, parentAlpha: Float) {
         // adjust tilemap camera to stay in sync with main camera
         val mainCamera = getStage().getCamera()
+        val vec = parent.parentToLocalCoordinates(Vector2(x, y))
+        tiledCamera.position.x = mainCamera.position.x + vec.x
+        tiledCamera.position.y = mainCamera.position.y + vec.y
+        tiledCamera.zoom = batch.transformMatrix.scaleX
+        tiledCamera.update()
+        tiledMapRenderer.setView(tiledCamera)
 
-//        tiledCamera.position.x = mainCamera.position.x + this.x
-//        tiledCamera.position.y = mainCamera.position.y + this.y
-//        tiledCamera.zoom = this.scaleY
 
-//        tiledCamera.update()
-        val projection = batch.projectionMatrix.cpy()
-        val transform = batch.transformMatrix.cpy()
-        tiledMapRenderer.setView(projection.mul(transform), 0f, 0f, mainCamera.viewportWidth, mainCamera.viewportHeight)
+        println("$x, $y, $vec")
 
         // need the following code to force batch order,
         //  otherwise it is batched and rendered last
         batch.end()
-        tiledMapRenderer.render(arrayOf(1).toIntArray())
+        tiledMapRenderer.render()
         batch.begin()
     }
-
     companion object {
         // window dimensions
         var windowWidth: Int = 800

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.maps.tiled.TmxMapLoader
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Group
@@ -148,8 +149,16 @@ class Workspace: Disposable {
                 layers["layer1"]?.addActor(image)
             }
             menuItem("Add TileMap").onTouchDown {
-                val map = TiledMapActor("project_test/assets/tiles/test1/testLevelMap.tmx")
+//                val map = TiledMapActor("project_test/assets/tiles/test1/testLevelMap.tmx")
+                val tiledmap = TmxMapLoader().load("project_test/assets/tiles/test1/testLevelMap.tmx")
+                val map = TileMapChunk()
+                map.loadFullMap(tiledmap)
                 map.userObject = EngineActor("Map 1")
+                map.changeLayers {
+                    if(it.name == "prototype") {
+                        it.isVisible = false
+                    }
+                }
                 layers["layer1"]?.addActor(map)
             }
             menuItem("Third Item") {
