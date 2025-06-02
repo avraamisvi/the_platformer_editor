@@ -1,6 +1,7 @@
 package com.hagios
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
@@ -28,8 +29,8 @@ import ktx.scene2d.vis.popupMenu
 import ktx.scene2d.vis.subMenu
 
 class Workspace: Disposable {
-    private lateinit var inspectorWindow: InspectorWindow
-    private lateinit var componentWindow: ComponentWindow
+    private var inspectorWindow: InspectorWindow? = null
+    private var componentWindow: ComponentWindow? = null
     private var menu: PopupMenu? = null
     private var selectedActor: Actor? = null
 
@@ -59,6 +60,25 @@ class Workspace: Disposable {
 
         stage.addListener(object : InputListener() {
 
+            override fun keyUp(event: InputEvent?, keycode: Int): Boolean {
+                return if(keycode == Input.Keys.I) {
+                    inspectorWindow?.close()
+                    selectedActor?.let {
+                        inspectorWindow = InspectorWindow(stage.height)
+                        inspectorWindow?.setActor(it)
+                        windows.addActor(inspectorWindow?.create())
+                    }
+                    true
+                } else if(keycode == Input.Keys.C) {
+                    componentWindow?.close()
+                    componentWindow = ComponentWindow(stage.height)
+                    windows.addActor(componentWindow?.create())
+                    true
+                } else {
+                    false
+                }
+            }
+
             override fun scrolled(event: InputEvent?, x: Float, y: Float, amountX: Float, amountY: Float): Boolean {
                 level.scaleX += (amountY * .05f)
                 level.scaleY += (amountY * .05f)
@@ -77,19 +97,16 @@ class Workspace: Disposable {
                 return if(event?.button == 0) {
                     val window = windows.hit(x, y, true)
                     if (window == null) {
+                        inspectorWindow?.close()
                         val coords = level.parentToLocalCoordinates(Vector2(x, y))
                         val actor = level.hit(coords.x, coords.y, false)
 
                         selectedActor?.let { it.debug = false; selectedActor = null }
+                        selectedActor?.debug = false
+                        selectedActor = actor
+                        selectedActor?.debug = true
 
-                        if (actor != null && inspectorWindow.isNotOpenFor(actor)) {
-                            actor.debug = true
-                            selectedActor = actor
-                            inspectorWindow.close()
-                            inspectorWindow = InspectorWindow(stage.height)
-                            inspectorWindow.setActor(actor)
-                            windows.addActor(inspectorWindow.create())
-
+                        if (actor != null) {
                             true
                         } else {
                             false
@@ -116,10 +133,8 @@ class Workspace: Disposable {
 
         })
 
-        this.componentWindow = ComponentWindow(stage.height)
-        this.inspectorWindow = InspectorWindow(0f)
 
-        windows.addActor(componentWindow.create())
+        this.inspectorWindow = InspectorWindow(0f)
         stage.addActor(windows)
     }
 

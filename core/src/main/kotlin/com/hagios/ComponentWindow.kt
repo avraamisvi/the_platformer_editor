@@ -50,6 +50,15 @@ class ComponentWindow(val height: Float) : Disposable {
         window.height = height
     }
 
+    fun isOpen(): Boolean {
+        return window.isVisible
+    }
+
+    fun close() {
+        return window.fadeOut()
+    }
+
+
     override fun dispose() {
     }
 }
