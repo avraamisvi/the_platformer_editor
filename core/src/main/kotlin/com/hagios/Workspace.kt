@@ -17,17 +17,20 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport
 import com.hagios.editor.WorkspaceMenuFactory
 import com.hagios.editor.actors.SelectedActor
 import com.hagios.editor.actors.SelectionBox
-import com.kotcrab.vis.ui.VisUI
-import com.kotcrab.vis.ui.widget.PopupMenu
+import imgui.ImGui
+
+//import com.kotcrab.vis.ui.VisUI
+//import com.kotcrab.vis.ui.widget.PopupMenu
 
 const val TOOL_LAYER = "__TOOLS__"
 
 class Workspace: Disposable {
     private var inspectorWindow: InspectorWindow? = null
     private var componentWindow: ComponentWindow? = null
-    private var menu: PopupMenu? = null
+    private var workspaceMenu: WorkspaceMenu = WorkspaceMenu(this::menuEvent)
+
+//    private var menu: PopupMenu? = null
     private val selectedActor: SelectedActor = SelectedActor(SelectionBox())
-    private val workspaceMenuFactory = WorkspaceMenuFactory()
 
     val stage: Stage = Stage(
         ScalingViewport(
@@ -42,34 +45,18 @@ class Workspace: Disposable {
     val windows: Group = Group()
 
     fun create() {
-        VisUI.load()
         Gdx.input.setInputProcessor(stage)
+
+        stage.addActor(windows)
 
         level.addLayer(TOOL_LAYER)
         level.addLayer("layer1")
         level.setPosition(0f, 0f)
         stage.addActor(level)
 
-        stage.addListener(object : InputListener() {
+        selectedActor.connect(level)
 
-            override fun keyUp(event: InputEvent?, keycode: Int): Boolean {
-                return if(keycode == Input.Keys.I) {
-                    inspectorWindow?.close()
-                    selectedActor.doIfSelected { selected ->
-                        inspectorWindow = InspectorWindow(stage.height)
-                        inspectorWindow?.setActor(selected)
-                        windows.addActor(inspectorWindow?.create())
-                    }
-                    true
-                } else if(keycode == Input.Keys.C) {
-                    componentWindow?.close()
-                    componentWindow = ComponentWindow(stage.height)
-                    windows.addActor(componentWindow?.create())
-                    true
-                } else {
-                    false
-                }
-            }
+        stage.addListener(object : InputListener() {
 
             override fun scrolled(event: InputEvent?, x: Float, y: Float, amountX: Float, amountY: Float): Boolean {
                 level.scaleX += (amountY * .05f)
@@ -80,11 +67,6 @@ class Workspace: Disposable {
 
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
                 Gdx.app.log("Example", "touch started at (" + x + ", " + y + ")")
-
-                if(menu != null) {
-                    menu = null
-                    return false
-                }
 
                 return if(event?.button == 0) {
                     val window = windows.hit(x, y, true)
@@ -101,12 +83,6 @@ class Workspace: Disposable {
                     } else {
                         false
                     }
-                } else if(event?.button == 1) {
-                    menu = workspaceMenuFactory.mainPopupMenu(level) {
-                        "layer1"
-                    }
-                    menu?.showMenu(stage, x, y)
-                    return true
                 } else {
                     false
                 }
@@ -123,8 +99,6 @@ class Workspace: Disposable {
 
         })
 
-        stage.addActor(windows)
-        selectedActor.connect(level)
     }
 
     fun resize(width: Int, height: Int) {
@@ -133,43 +107,40 @@ class Workspace: Disposable {
 
     fun render(delta: Float) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+
+        GuiHandler.restoreInputToGdx()
+
         selectedActor.update()
         stage.act(Gdx.graphics.getDeltaTime())
         stage.draw()
+
+        GuiHandler.startImGui()
+
+        inspectorWindow?.render()
+        workspaceMenu.render(level){ "layer1" }
+        AssetsWindow.render()
+
+        GuiHandler.endImGui()
     }
 
     override fun dispose() {
-        VisUI.dispose()
+        GuiHandler.disposeImGui()
         stage.dispose()
     }
 
-//    fun createMenu(stage: Stage, x: Float, y: Float) {
-//
-//        menu = scene2d.popupMenu {
-//            menuItem("Add Image").onTouchDown {
-//                val image = Image(Texture("logo.png".toInternalFile(), true).apply { setFilter(Linear, Linear) })
-//                image.userObject = EngineActor("Image 1")
-//
-//                level.addActorInLayer("layer1", image)
-//            }
-//            menuItem("Add TileMap").onTouchDown {
-//                val tiledmap = TmxMapLoader().load("project_test/assets/tiles/test1/testLevelMap.tmx")
-//                val map = TileMapChunk()
-//                map.loadFullMap(tiledmap)
-//                map.userObject = EngineActor("Map 1")
-//                map.changeLayers {
-//                    if(it.name == "prototype") {
-//                        it.isVisible = false
-//                    }
-//                }
-//                level.addActorInLayer("layer1", map)
-//            }
-//            menuItem("Third Item") {
-//                subMenu {
-//                    menuItem("SubMenu Item")
-//                }
-//            }
-//        }
-//        menu?.showMenu(stage, x, y)
-//    }
+    fun menuEvent(event: WorkspaceMenu.MenuEvent) {
+        when(event.type) {
+            WorkspaceMenu.MenuEventType.OPEN_INSPECTOR -> openInspector()
+            else -> print("NONE")
+        }
+    }
+
+    fun openInspector() {
+        inspectorWindow?.close()
+        selectedActor.doIfSelected { selected ->
+            inspectorWindow = InspectorWindow(stage.height)
+            inspectorWindow?.setActor(selected)
+        }
+        inspectorWindow?.show()
+    }
 }

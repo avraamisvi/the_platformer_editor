@@ -44,7 +44,7 @@ class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), Ac
         height = noTileMapTexture?.height?.toFloat() ?: 0f
 
         userObject = ActorData("TileMap",
-            mapOf(MAP_PATH to ActorProperty.string("path")),
+            mapOf(MAP_PATH to ActorProperty.string(MAP_PATH)),
             listOf(this))
     }
 

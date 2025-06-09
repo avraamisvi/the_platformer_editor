@@ -20,23 +20,25 @@ class ActorConfigurationLoader {
 
     private fun loadActorsConfigurations(): Map<String, Configuration> {
         val classes = findAllClassesUsingClassLoader("com.hagios.editor.actors.configuration")
-        return classes.filterNotNull().map {
-            if(it.kotlin.hasAnnotation<ActorConfiguration>()) {
+        return classes.filterNotNull().mapNotNull {
+            if (it.kotlin.hasAnnotation<ActorConfiguration>()) {
 
                 val configuration = it.kotlin.findAnnotations(ActorConfiguration::class).first()
                 val factory = it.kotlin.declaredFunctions.first {
                     it.hasAnnotation<ActorFactory>()
                 }
 
-                Configuration(id = configuration.id,
+                Configuration(
+                    id = configuration.id,
                     label = configuration.label,
                     klass = it.kotlin,
                     instance = it.kotlin.createInstance(),
-                    factory = factory)
+                    factory = factory
+                )
             } else {
                 null
             }
-        }.filterNotNull().associateBy { it.id }
+        }.associateBy { it.id }
     }
 
     fun findAllClassesUsingClassLoader(packageName: String): Set<Class<*>?> {

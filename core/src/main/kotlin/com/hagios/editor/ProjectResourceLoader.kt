@@ -5,6 +5,6 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader
 
 object ProjectResourceLoader {
     fun loadTileMap(path: String): TiledMap? {
-        return TmxMapLoader().load("project_test/${path}")
+        return TmxMapLoader().load(path)
     }
 }

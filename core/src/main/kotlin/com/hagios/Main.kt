@@ -1,23 +1,27 @@
 package com.hagios
 
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.hagios.editor.ActorConfigurationLoader
+import com.badlogic.gdx.Gdx
+import imgui.ImGui
+import imgui.ImGuiIO
+import imgui.gl3.ImGuiImplGl3
+import imgui.glfw.ImGuiImplGlfw
 import ktx.app.KtxGame
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
 import ktx.assets.disposeSafely
-import ktx.assets.toInternalFile
 import ktx.async.KtxAsync
-import ktx.graphics.use
 
-class Main : KtxGame<KtxScreen>() {
+
+class Main(val windowSupplier: ()->Long) : KtxGame<KtxScreen>() {
     override fun create() {
         KtxAsync.initiate()
-
         addScreen(FirstScreen())
         setScreen<FirstScreen>()
+        setWindowHandler(windowSupplier())
+    }
+
+    fun setWindowHandler(windowHandle: Long) {
+        GuiHandler.initImGui(windowHandle)
     }
 }
 

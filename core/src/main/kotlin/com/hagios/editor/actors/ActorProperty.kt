@@ -8,7 +8,7 @@ data class ActorProperty(val name: String, val type: ActorPropertyType) {
     }
 
     fun asString(): String {
-        return value.toString()
+        return value?.toString() ?: ""
     }
 
     fun setValue(value: Any) {
