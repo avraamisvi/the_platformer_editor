@@ -7,7 +7,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.utils.Disposable
 import com.hagios.editor.actors.ActorData
 import com.hagios.editor.actors.ActorProperty
+import com.hagios.editor.actors.ActorPropertyType
 import imgui.ImGui
+import imgui.ImVec2
 import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImBoolean
 import imgui.type.ImString
@@ -16,6 +18,7 @@ import imgui.type.ImString
 class InspectorWindow(val height: Float) : Disposable {
 
     var isOpen = false
+    val windowSize = ImVec2(300f, 200f)
 
     fun show() {
         isOpen = true
@@ -30,19 +33,35 @@ class InspectorWindow(val height: Float) : Disposable {
         if(!isOpen) return
 
         if(ImGui.begin("Inspector", ImBoolean(true))) {
+            ImGui.setNextWindowSize(windowSize)
+
+            //TODO create custom window maker in the configuration?
+
             engineActor?.let { actorData ->
                 actorData.propertiesList().forEach { property ->
 
-                    if(ImGui.button("Set Path ...")) {
-                        AssetsWindow.show { path ->
-                            engineActor?.setProperty(property.name, path)
+                    if(property.type == ActorPropertyType.ASSET) {
+                        if (ImGui.button("Set Path ...")) {
+                            AssetsWindow.show { path ->
+                                property.setValue(path)
+                            }
+                        }
+
+                        ImGui.inputText(
+                            property.name,
+                            ImString(property.asString()),
+                            ImGuiInputTextFlags.ReadOnly
+                        )
+                    } else if(property.type == ActorPropertyType.PROPERTY_LIST) { //TODO USE RECURSION?
+                        property.asList().forEach { item ->
+                            if(item.type == ActorPropertyType.BOOL) {
+                                val checked = ImBoolean(item.asBool())
+                                if(ImGui.checkbox(item.name, checked)) {
+                                    item.setValue(checked.get())
+                                }
+                            }
                         }
                     }
-
-                    ImGui.inputText(property.name,
-                        ImString(property.asString()),
-                        ImGuiInputTextFlags.ReadOnly)
-
                 }
             }
         }

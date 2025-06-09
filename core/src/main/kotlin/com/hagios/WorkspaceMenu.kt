@@ -15,8 +15,6 @@ import ktx.scene2d.vis.popupMenu
 class WorkspaceMenu(val listener: (event: MenuEvent)->Unit) {
     private val configurations = ActorConfigurationLoader().actorsConfigurations
 
-
-
     fun render(level: EditingScene, selectedLayer: ()->String) {
 
         if(ImGui.beginMainMenuBar()) {

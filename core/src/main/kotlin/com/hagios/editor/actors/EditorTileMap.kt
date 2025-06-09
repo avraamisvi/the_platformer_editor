@@ -29,6 +29,7 @@ class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), Ac
 
     companion object {
         const val MAP_PATH = "map_path"
+        const val LAYERS = "layers"
     }
 
     /**
@@ -42,10 +43,6 @@ class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), Ac
         this.viewBounds = Rectangle()
         width = noTileMapTexture?.width?.toFloat() ?: 0f
         height = noTileMapTexture?.height?.toFloat() ?: 0f
-
-        userObject = ActorData("TileMap",
-            mapOf(MAP_PATH to ActorProperty.string(MAP_PATH)),
-            listOf(this))
     }
 
     fun loadFullMap(map: TiledMap) {
@@ -61,11 +58,17 @@ class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), Ac
 
         layers = Array<TiledMapTileLayer>(map.getLayers().getCount())
 
-        map.layers.forEach {
-            require(it is TiledMapTileLayer)
-            layers!!.add(it)
+        val visibleLayersList: List<ActorProperty> = buildList {
+            map.layers.forEach {
+                require(it is TiledMapTileLayer)
+                layers!!.add(it)
+                val layerEntry = ActorProperty(it.name, ActorPropertyType.BOOL)
+                layerEntry.setValue(it.isVisible)
+                this.add(layerEntry)
+            }
         }
 
+        (this.userObject as ActorData).property(LAYERS)?.setValue(visibleLayersList)
         setSize(mapWidth.toFloat(), mapHeight.toFloat())
     }
 
@@ -238,10 +241,19 @@ class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), Ac
     }
 
     override fun propertyChanged(property: ActorProperty) {
+        print(property.name)
         if(property.name == MAP_PATH) {
             ProjectResourceLoader.loadTileMap(property.asString())?.let {
                 loadFullMap(it)
             }
+        } else if(property.name in layers.names()){
+            layers?.first { it.name == property.name }?.let {
+                it.isVisible = property.asBool()
+            }
         }
     }
+}
+
+private fun Array<TiledMapTileLayer>?.names(): Set<String> {
+    return this?.map { it.name }?.toSet() ?: emptySet()
 }
