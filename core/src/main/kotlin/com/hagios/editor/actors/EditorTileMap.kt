@@ -1,28 +1,35 @@
-package com.hagios
+package com.hagios.editor.actors
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.maps.MapObject
 import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
+import com.badlogic.gdx.maps.tiled.TmxMapLoader
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.utils.Array
+import com.hagios.editor.ProjectResourceLoader
+import ktx.collections.isNotEmpty
 import kotlin.math.max
 import kotlin.math.min
 
 /**
  * Modified version to draw the whole map at once in order to be able to shrink and increase it
  */
-@Deprecated("moved to actors")
-class TileMapChunk : Actor() {
+class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), ActorDataChangeListener {
     private var layers: Array<TiledMapTileLayer>? = null
     private val vertices = FloatArray(200)
     private val viewBounds: Rectangle
 
     private var maxRow = 0
     private var maxCol = 0
+
+    companion object {
+        const val MAP_PATH = "map_path"
+    }
 
     /**
      *
@@ -33,33 +40,13 @@ class TileMapChunk : Actor() {
      */
     init {
         this.viewBounds = Rectangle()
-    }
+        width = noTileMapTexture?.width?.toFloat() ?: 0f
+        height = noTileMapTexture?.height?.toFloat() ?: 0f
 
-//    /**
-//     * Copy the section defined by this chunk from the given map
-//     * @param map the map to create the chunk from
-//     */
-//    fun loadFromMap(map: TiledMap) {
-//        val tileWidth = map.getProperties().get("tilewidth", Int::class.java)
-//        val tileHeight = map.getProperties().get("tileheight", Int::class.java)
-//
-//        layers = Array<TiledMapTileLayer>(map.getLayers().getCount())
-//        for (l in map.getLayers()) {
-//            if (l is TiledMapTileLayer) {
-//                val layer = l
-//                val slicedLayer = TiledMapTileLayer(this.cwidth, this.cheight, tileWidth, tileHeight)
-//                slicedLayer.setName(layer.getName())
-//                for (c in this.col..<this.cwidth) for (r in this.row..<this.cheight) {
-//                    val cell = layer.getCell(c, r)
-//                    slicedLayer.setCell(c - this.col, r - this.row, cell)
-//                }
-//                layers!!.add(slicedLayer)
-//            } else {
-//            }
-//        }
-//
-//        setSize((tileWidth * cwidth).toFloat(), (tileHeight * cheight).toFloat())
-//    }
+        userObject = ActorData("TileMap",
+            mapOf(MAP_PATH to ActorProperty.string("path")),
+            listOf(this))
+    }
 
     fun loadFullMap(map: TiledMap) {
         val tileWidth = map.getProperties().get("tilewidth", Int::class.java)
@@ -88,25 +75,24 @@ class TileMapChunk : Actor() {
     }
 
     override fun draw(batch: Batch, parentAlpha: Float) {
-        //update the viewbounds
 
-        val cam = getStage().getCamera() as OrthographicCamera
-        val width = cam.viewportWidth * cam.zoom
-        val height = cam.viewportHeight * cam.zoom
-        viewBounds.set(cam.position.x - width / 2, cam.position.y - height / 2, width, height)
+        if(layers.isNotEmpty()) {
 
+            val cam = getStage().getCamera() as OrthographicCamera
+            val width = cam.viewportWidth * cam.zoom
+            val height = cam.viewportHeight * cam.zoom
+            viewBounds.set(cam.position.x - width / 2, cam.position.y - height / 2, width, height)
 
-        //draw the layers
-        for (layer in layers!!) {
-            if (!layer.isVisible()) continue
+            //draw the layers
+            for (layer in layers!!) {
+                if (!layer.isVisible()) continue
 
-            if (layer is TiledMapTileLayer) {
-                drawLayer(layer, batch, parentAlpha)
-            } else {
-                for (`object` in layer.getObjects()) {
-                    drawObject(`object`)
+                if (layer is TiledMapTileLayer) {
+                    drawLayer(layer, batch, parentAlpha)
                 }
             }
+        } else {
+            noTileMapTexture?.let { batch.draw(noTileMapTexture, x, y) }
         }
     }
 
@@ -120,12 +106,6 @@ class TileMapChunk : Actor() {
 
         val layerTileWidth = layer.getTileWidth().toFloat() // * unitScale;
         val layerTileHeight = layer.getTileHeight().toFloat() // * unitScale;
-
-//        val col1 = max(0, (viewBounds.x / layerTileWidth).toInt())
-//        val col2 = min(layerWidth, ((viewBounds.x + viewBounds.width + layerTileWidth) / layerTileWidth).toInt())
-//
-//        val row1 = max(0, (viewBounds.y / layerTileHeight).toInt())
-//        val row2 = min(layerHeight, ((viewBounds.y + viewBounds.height + layerTileHeight) / layerTileHeight).toInt())
 
         val col1 = 0
         val col2 = maxCol
@@ -257,6 +237,11 @@ class TileMapChunk : Actor() {
         }
     }
 
-    protected fun drawObject(`object`: MapObject?) {
+    override fun propertyChanged(property: ActorProperty) {
+        if(property.name == MAP_PATH) {
+            ProjectResourceLoader.loadTileMap(property.asString())?.let {
+                loadFullMap(it)
+            }
+        }
     }
 }

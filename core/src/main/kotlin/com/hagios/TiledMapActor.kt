@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor
  * Loads a Tiled map file (*.tmx) with a given filename
  * and adds it to a stage (so that the tilemap automatically renders).
  */
+@Deprecated("moved to actors")
 class TiledMapActor(filename: String?) : Actor() {
     private val tiledMap: TiledMap
     private val tiledCamera: OrthographicCamera

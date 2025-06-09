@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="64mm"
+   height="63.999996mm"
+   viewBox="0 0 64 63.999996"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   sodipodi:docname="select_box.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="16.771208"
+     inkscape:cx="2.6831699"
+     inkscape:cy="2.8322349"
+     inkscape:window-width="1608"
+     inkscape:window-height="870"
+     inkscape:window-x="0"
+     inkscape:window-y="38"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-7.0937337,-3.7446923)">
+    <g
+       id="g2"
+       transform="matrix(2.0000001,0,0,2.0000001,-9.4849144,-4.1638678)"
+       inkscape:export-filename="selection_box.png"
+       inkscape:export-xdpi="27.243526"
+       inkscape:export-ydpi="27.243526">
+      <rect
+         style="fill:#7fff2a;fill-opacity:0;stroke:none;stroke-width:0.0507359;stroke-dasharray:0.202943, 0.101472, 0.0507359, 0.101472;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect1"
+         width="2.1166666"
+         height="2.1166666"
+         x="9.0274086"
+         y="4.4478364"
+         inkscape:export-filename="selection_box.png"
+         inkscape:export-xdpi="27.243526"
+         inkscape:export-ydpi="27.243526" />
+      <rect
+         style="fill:#00ffff;stroke:none;stroke-width:0.035602;stroke-dasharray:0.142407, 0.0712041, 0.035602, 0.0712041;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect2"
+         width="1.4540727"
+         height="1.5171769"
+         x="9.3587055"
+         y="4.7475815"
+         inkscape:export-filename="selection_box.png"
+         inkscape:export-xdpi="27.243526"
+         inkscape:export-ydpi="27.243526" />
+    </g>
+  </g>
+</svg>

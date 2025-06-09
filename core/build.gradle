@@ -40,6 +40,13 @@ dependencies {
   implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
   implementation "org.jetbrains.kotlin:kotlin-reflect:2.1.21"
 
+  api "io.github.spair:imgui-java-binding:$lmgui"
+  api "io.github.spair:imgui-java-lwjgl3:$lmgui"
+  api "io.github.spair:imgui-java-natives-linux:$lmgui"
+  api "io.github.spair:imgui-java-natives-macos:$lmgui"
+  api "io.github.spair:imgui-java-natives-windows:$lmgui"
+
+
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }

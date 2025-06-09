@@ -2,7 +2,7 @@ package com.hagios.demo
 
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
-import com.hagios.loader.annotations.ActorListener
+import com.hagios.editor.annotations.ActorListener
 
 @ActorListener("bob")
 class BobInputListener : InputListener() {

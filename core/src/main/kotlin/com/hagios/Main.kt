@@ -3,6 +3,7 @@ package com.hagios
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.hagios.editor.ActorConfigurationLoader
 import ktx.app.KtxGame
 import ktx.app.KtxScreen
 import ktx.app.clearScreen

@@ -4,35 +4,30 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.maps.tiled.TmxMapLoader
 import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.Disposable
 import com.badlogic.gdx.utils.Scaling
 import com.badlogic.gdx.utils.viewport.ScalingViewport
+import com.hagios.editor.WorkspaceMenuFactory
+import com.hagios.editor.actors.SelectedActor
+import com.hagios.editor.actors.SelectionBox
 import com.kotcrab.vis.ui.VisUI
 import com.kotcrab.vis.ui.widget.PopupMenu
-import ktx.actors.onTouchDown
-import ktx.assets.toInternalFile
-import ktx.scene2d.scene2d
-import ktx.scene2d.vis.menuItem
-import ktx.scene2d.vis.popupMenu
-import ktx.scene2d.vis.subMenu
+
+const val TOOL_LAYER = "__TOOLS__"
 
 class Workspace: Disposable {
     private var inspectorWindow: InspectorWindow? = null
     private var componentWindow: ComponentWindow? = null
     private var menu: PopupMenu? = null
-    private var selectedActor: Actor? = null
+    private val selectedActor: SelectedActor = SelectedActor(SelectionBox())
+    private val workspaceMenuFactory = WorkspaceMenuFactory()
 
     val stage: Stage = Stage(
         ScalingViewport(
@@ -43,18 +38,15 @@ class Workspace: Disposable {
         ),
         SpriteBatch())
 
-    val level: Group = Group()
-    val layers: MutableMap<String, Group> = mutableMapOf()
+    val level = EditingScene()
     val windows: Group = Group()
 
     fun create() {
         VisUI.load()
         Gdx.input.setInputProcessor(stage)
 
-        val layer1 = Group()
-        layers.put("layer1", layer1)
-        level.addActor(layer1)
-
+        level.addLayer(TOOL_LAYER)
+        level.addLayer("layer1")
         level.setPosition(0f, 0f)
         stage.addActor(level)
 
@@ -63,9 +55,9 @@ class Workspace: Disposable {
             override fun keyUp(event: InputEvent?, keycode: Int): Boolean {
                 return if(keycode == Input.Keys.I) {
                     inspectorWindow?.close()
-                    selectedActor?.let {
+                    selectedActor.doIfSelected { selected ->
                         inspectorWindow = InspectorWindow(stage.height)
-                        inspectorWindow?.setActor(it)
+                        inspectorWindow?.setActor(selected)
                         windows.addActor(inspectorWindow?.create())
                     }
                     true
@@ -98,24 +90,22 @@ class Workspace: Disposable {
                     val window = windows.hit(x, y, true)
                     if (window == null) {
                         inspectorWindow?.close()
+                        selectedActor.clear()
+
                         val coords = level.parentToLocalCoordinates(Vector2(x, y))
                         val actor = level.hit(coords.x, coords.y, false)
 
-                        selectedActor?.let { it.debug = false; selectedActor = null }
-                        selectedActor?.debug = false
-                        selectedActor = actor
-                        selectedActor?.debug = true
+                        actor?.let { selectedActor.select(actor) }
 
-                        if (actor != null) {
-                            true
-                        } else {
-                            false
-                        }
+                        selectedActor.isSelected()
                     } else {
                         false
                     }
                 } else if(event?.button == 1) {
-                    createMenu(stage, x, y)
+                    menu = workspaceMenuFactory.mainPopupMenu(level) {
+                        "layer1"
+                    }
+                    menu?.showMenu(stage, x, y)
                     return true
                 } else {
                     false
@@ -124,7 +114,7 @@ class Workspace: Disposable {
 
             override fun touchDragged(event: InputEvent?, x: Float, y: Float, pointer: Int) {
                 val coords = level.parentToLocalCoordinates(Vector2(x, y))
-                selectedActor?.setPosition(coords.x, coords.y, Align.center)
+                selectedActor.setPosition(coords.x, coords.y, Align.center)
             }
 
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
@@ -133,9 +123,8 @@ class Workspace: Disposable {
 
         })
 
-
-        this.inspectorWindow = InspectorWindow(0f)
         stage.addActor(windows)
+        selectedActor.connect(level)
     }
 
     fun resize(width: Int, height: Int) {
@@ -144,44 +133,43 @@ class Workspace: Disposable {
 
     fun render(delta: Float) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+        selectedActor.update()
         stage.act(Gdx.graphics.getDeltaTime())
-//        tileMapRenderer.render()
         stage.draw()
     }
 
     override fun dispose() {
         VisUI.dispose()
-//        tileMap.dispose()
         stage.dispose()
     }
 
-    fun createMenu(stage: Stage, x: Float, y: Float) {
-        menu = scene2d.popupMenu {
-            menuItem("Add Image").onTouchDown {
-                val image = Image(Texture("logo.png".toInternalFile(), true).apply { setFilter(Linear, Linear) })
-                image.userObject = EngineActor("Image 1")
-
-                layers["layer1"]?.addActor(image)
-            }
-            menuItem("Add TileMap").onTouchDown {
-//                val map = TiledMapActor("project_test/assets/tiles/test1/testLevelMap.tmx")
-                val tiledmap = TmxMapLoader().load("project_test/assets/tiles/test1/testLevelMap.tmx")
-                val map = TileMapChunk()
-                map.loadFullMap(tiledmap)
-                map.userObject = EngineActor("Map 1")
-                map.changeLayers {
-                    if(it.name == "prototype") {
-                        it.isVisible = false
-                    }
-                }
-                layers["layer1"]?.addActor(map)
-            }
-            menuItem("Third Item") {
-                subMenu {
-                    menuItem("SubMenu Item")
-                }
-            }
-        }
-        menu?.showMenu(stage, x, y)
-    }
+//    fun createMenu(stage: Stage, x: Float, y: Float) {
+//
+//        menu = scene2d.popupMenu {
+//            menuItem("Add Image").onTouchDown {
+//                val image = Image(Texture("logo.png".toInternalFile(), true).apply { setFilter(Linear, Linear) })
+//                image.userObject = EngineActor("Image 1")
+//
+//                level.addActorInLayer("layer1", image)
+//            }
+//            menuItem("Add TileMap").onTouchDown {
+//                val tiledmap = TmxMapLoader().load("project_test/assets/tiles/test1/testLevelMap.tmx")
+//                val map = TileMapChunk()
+//                map.loadFullMap(tiledmap)
+//                map.userObject = EngineActor("Map 1")
+//                map.changeLayers {
+//                    if(it.name == "prototype") {
+//                        it.isVisible = false
+//                    }
+//                }
+//                level.addActorInLayer("layer1", map)
+//            }
+//            menuItem("Third Item") {
+//                subMenu {
+//                    menuItem("SubMenu Item")
+//                }
+//            }
+//        }
+//        menu?.showMenu(stage, x, y)
+//    }
 }
