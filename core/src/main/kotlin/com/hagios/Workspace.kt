@@ -14,13 +14,8 @@ import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.Disposable
 import com.badlogic.gdx.utils.Scaling
 import com.badlogic.gdx.utils.viewport.ScalingViewport
-import com.hagios.editor.WorkspaceMenuFactory
 import com.hagios.editor.actors.SelectedActor
 import com.hagios.editor.actors.SelectionBox
-import imgui.ImGui
-
-//import com.kotcrab.vis.ui.VisUI
-//import com.kotcrab.vis.ui.widget.PopupMenu
 
 const val TOOL_LAYER = "__TOOLS__"
 
@@ -29,7 +24,6 @@ class Workspace: Disposable {
     private var componentWindow: ComponentWindow? = null
     private var workspaceMenu: WorkspaceMenu = WorkspaceMenu(this::menuEvent)
 
-//    private var menu: PopupMenu? = null
     private val selectedActor: SelectedActor = SelectedActor(SelectionBox())
 
     val stage: Stage = Stage(
@@ -58,7 +52,8 @@ class Workspace: Disposable {
 
         stage.addListener(object : InputListener() {
 
-            override fun scrolled(event: InputEvent?, x: Float, y: Float, amountX: Float, amountY: Float): Boolean {
+            override fun scrolled(event: InputEvent?, x: Float, y: Float,
+                                  amountX: Float, amountY: Float): Boolean {
                 level.scaleX += (amountY * .05f)
                 level.scaleY += (amountY * .05f)
 
@@ -98,6 +93,9 @@ class Workspace: Disposable {
             }
 
         })
+    }
+
+    fun load() {
 
     }
 

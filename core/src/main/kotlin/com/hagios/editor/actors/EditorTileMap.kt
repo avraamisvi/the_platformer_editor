@@ -4,25 +4,23 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.gdx.maps.MapObject
 import com.badlogic.gdx.maps.tiled.TiledMap
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer
-import com.badlogic.gdx.maps.tiled.TmxMapLoader
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.utils.Array
 import com.hagios.editor.ProjectResourceLoader
 import ktx.collections.isNotEmpty
-import kotlin.math.max
-import kotlin.math.min
+import java.util.UUID
 
 /**
  * Modified version to draw the whole map at once in order to be able to shrink and increase it
  */
-class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), ActorDataChangeListener {
+class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), ActorDataChangeListener, ConfiguredActor {
     private var layers: Array<TiledMapTileLayer>? = null
     private val vertices = FloatArray(200)
     private val viewBounds: Rectangle
+    private var id: String = UUID.randomUUID().toString()
 
     private var maxRow = 0
     private var maxCol = 0
@@ -43,6 +41,11 @@ class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), Ac
         this.viewBounds = Rectangle()
         width = noTileMapTexture?.width?.toFloat() ?: 0f
         height = noTileMapTexture?.height?.toFloat() ?: 0f
+    }
+
+    override fun getUId(): String = id
+    override fun setUId(value: String) {
+        id = value
     }
 
     fun loadFullMap(map: TiledMap) {
@@ -240,6 +243,21 @@ class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), Ac
         }
     }
 
+    private var mapPath = ""
+    @PropertySetter("map_path")
+    fun setMapPath(value: String) {
+        this.mapPath = value
+        ProjectResourceLoader.loadTileMap(value)?.let {
+            loadFullMap(it)
+        }
+    }
+
+    @PropertyGetter("map_path")
+    fun getMapPath(): String {
+        return mapPath
+    }
+
+    @Deprecated("this is too complex")
     override fun propertyChanged(property: ActorProperty) {
         print(property.name)
         if(property.name == MAP_PATH) {

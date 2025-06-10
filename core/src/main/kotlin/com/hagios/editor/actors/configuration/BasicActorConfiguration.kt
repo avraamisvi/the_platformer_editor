@@ -1,9 +1,11 @@
 package com.hagios.editor.actors.configuration
 
 import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.scenes.scene2d.Actor
 import com.hagios.editor.actors.EditorActor
 import com.hagios.editor.annotations.ActorConfiguration
 import com.hagios.editor.annotations.ActorFactory
+import com.hagios.editor.annotations.ActorStore
 import ktx.assets.async.AssetStorage
 import ktx.assets.toInternalFile
 
@@ -19,5 +21,16 @@ class BasicActorConfiguration {
         actor.width = 64f
         actor.height = 64f
         return actor
+    }
+
+    @ActorStore
+    fun save(actor: Actor) {
+//        entity: ActorEntity? = null,
+//        properties: List<PropertyEntity>? = null
+
+//        val entity = ActorEntity()
+//
+//        ProjectRepository.saveActor()
+
     }
 }

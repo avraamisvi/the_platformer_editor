@@ -90,7 +90,7 @@ class InspectorWindow(val height: Float) : Disposable {
         }
     }
 
-    var engineActor: ActorData? = null
+    var engineActor: Actor? = null
 //
 //    private fun createList(): ArrayList<Component> {
 //        val list = ArrayList<Component>()
@@ -133,7 +133,7 @@ class InspectorWindow(val height: Float) : Disposable {
 //    }
 //
     fun setActor(actor: Actor) {
-        engineActor = actor.userObject as ActorData
+        engineActor = actor
     }
 //
 //    fun reset() {

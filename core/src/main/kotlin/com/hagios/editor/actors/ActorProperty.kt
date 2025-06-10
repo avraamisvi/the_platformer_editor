@@ -1,5 +1,6 @@
 package com.hagios.editor.actors
 
+@Deprecated("This is too complex")
 data class ActorProperty(val name: String,
                          val type: ActorPropertyType) {
 

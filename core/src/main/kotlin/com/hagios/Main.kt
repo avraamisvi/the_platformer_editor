@@ -3,6 +3,7 @@ package com.hagios
 import com.badlogic.gdx.Gdx
 import com.hagios.data.AssetsRepository
 import com.hagios.data.ConnectionMananger
+import com.hagios.data.ProjectRepository
 import imgui.ImGui
 import imgui.ImGuiIO
 import imgui.gl3.ImGuiImplGl3
@@ -32,8 +33,10 @@ class FirstScreen : KtxScreen {
     private val workspace: Workspace = Workspace()
 
     init {
+        //TODO maybe mover estas create para uma outra classe
         ConnectionMananger.create()
         AssetsRepository.createAssetsIndex()
+        ProjectRepository.create()
 
         workspace.create()
     }

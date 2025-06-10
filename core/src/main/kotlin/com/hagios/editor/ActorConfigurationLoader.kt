@@ -1,8 +1,11 @@
 package com.hagios.editor
 
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.hagios.data.model.ActorEntity
+import com.hagios.data.model.PropertyEntity
 import com.hagios.editor.annotations.ActorConfiguration
 import com.hagios.editor.annotations.ActorFactory
+import com.hagios.editor.annotations.ActorStore
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.stream.Collectors
@@ -14,7 +17,7 @@ import kotlin.reflect.full.findAnnotations
 import kotlin.reflect.full.hasAnnotation
 
 
-class ActorConfigurationLoader {
+object ActorConfigurationLoader {
 
     val actorsConfigurations: Map<String, Configuration> by lazy { loadActorsConfigurations() }
 
@@ -28,12 +31,17 @@ class ActorConfigurationLoader {
                     it.hasAnnotation<ActorFactory>()
                 }
 
+                val storage = it.kotlin.declaredFunctions.first {
+                    it.hasAnnotation<ActorStore>()
+                }
+
                 Configuration(
                     id = configuration.id,
                     label = configuration.label,
                     klass = it.kotlin,
                     instance = it.kotlin.createInstance(),
-                    factory = factory
+                    factory = factory,
+                    storage = storage
                 )
             } else {
                 null
@@ -66,10 +74,15 @@ class ActorConfigurationLoader {
         val id: String,
         val label: String,
         private val factory: KFunction<*>,
+        private val storage: KFunction<*>,
         private val instance: Any,
         private val klass: KClass<*>) {
             fun create(): Actor {
                 return factory.call(instance) as Actor
+            }
+
+            fun save(actor: Actor) {
+                storage.call(instance, actor)
             }
     }
 }
