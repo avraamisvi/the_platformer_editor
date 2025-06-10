@@ -12,15 +12,18 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImBoolean
+import imgui.type.ImInt
 import imgui.type.ImString
 
 
 class InspectorWindow(val height: Float) : Disposable {
 
     var isOpen = false
-    val windowSize = ImVec2(300f, 200f)
+    var firstOpen = true
+    val windowSize = ImVec2(250f, 400f)
 
     fun show() {
+        firstOpen = true
         isOpen = true
     }
 
@@ -33,39 +36,58 @@ class InspectorWindow(val height: Float) : Disposable {
         if(!isOpen) return
 
         if(ImGui.begin("Inspector", ImBoolean(true))) {
-            ImGui.setNextWindowSize(windowSize)
+
+            if(firstOpen) {
+                ImGui.setWindowSize(windowSize)
+                firstOpen = false
+            } else {
+                ImGui.setNextWindowSize(windowSize)
+            }
 
             //TODO create custom window maker in the configuration?
 
             engineActor?.let { actorData ->
                 actorData.propertiesList().forEach { property ->
-
-                    if(property.type == ActorPropertyType.ASSET) {
-                        if (ImGui.button("Set Path ...")) {
-                            AssetsWindow.show { path ->
-                                property.setValue(path)
-                            }
-                        }
-
-                        ImGui.inputText(
-                            property.name,
-                            ImString(property.asString()),
-                            ImGuiInputTextFlags.ReadOnly
-                        )
-                    } else if(property.type == ActorPropertyType.PROPERTY_LIST) { //TODO USE RECURSION?
-                        property.asList().forEach { item ->
-                            if(item.type == ActorPropertyType.BOOL) {
-                                val checked = ImBoolean(item.asBool())
-                                if(ImGui.checkbox(item.name, checked)) {
-                                    item.setValue(checked.get())
-                                }
-                            }
-                        }
-                    }
+                    renderField(property)
                 }
             }
         }
         ImGui.end()
+    }
+
+    fun renderField(property: ActorProperty) {
+        if(property.type == ActorPropertyType.BOOL) {
+            val checked = ImBoolean(property.asBool())
+            if(ImGui.checkbox(property.name, checked)) {
+                property.setValue(checked.get())
+            }
+        } else if(property.type == ActorPropertyType.ASSET) {
+            if (ImGui.button("Set Path ...")) {
+                AssetsWindow.show { path ->
+                    property.setValue(path)
+                }
+            }
+
+            ImGui.inputText(
+                property.name,
+                ImString(property.asString()),
+                ImGuiInputTextFlags.ReadOnly
+            )
+        } else if(property.type == ActorPropertyType.STRING) {
+            val mutableValue = ImString(property.asString())
+            if(ImGui.inputText(property.name,mutableValue,ImGuiInputTextFlags.ReadOnly)) {
+                property.setValue(mutableValue.get())
+            }
+        } else if(property.type == ActorPropertyType.PROPERTY_LIST) { //TODO USE RECURSION?
+            property.asList().forEach { item ->
+                renderField(item)
+            }
+        } else if(property.type == ActorPropertyType.INT) {
+            val mutableValue = ImInt(property.asInt())
+            if(ImGui.inputInt(property.name,mutableValue,ImGuiInputTextFlags.ReadOnly)) {
+                property.setValue(mutableValue.get())
+            }
+        }
     }
 
     var engineActor: ActorData? = null
