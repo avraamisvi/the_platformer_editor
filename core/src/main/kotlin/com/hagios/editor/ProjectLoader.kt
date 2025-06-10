@@ -19,7 +19,7 @@ object ProjectLoader {
 
         ProjectRepository.loadActor(scene.id).forEach { actor ->
             ActorConfigurationLoader.actorsConfigurations[actor.type]?.let { factory ->
-                factory.
+//                factory.
             }
         }
 

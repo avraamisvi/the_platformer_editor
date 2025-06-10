@@ -1,18 +1,12 @@
 package com.hagios.editor
 
 import com.badlogic.gdx.scenes.scene2d.Actor
-import com.hagios.data.model.ActorEntity
-import com.hagios.data.model.PropertyEntity
+import com.hagios.editor.actors.ActorConfigurationHandler
 import com.hagios.editor.annotations.ActorConfiguration
-import com.hagios.editor.annotations.ActorFactory
-import com.hagios.editor.annotations.ActorStore
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.stream.Collectors
-import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
 import kotlin.reflect.full.createInstance
-import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.findAnnotations
 import kotlin.reflect.full.hasAnnotation
 
@@ -27,22 +21,17 @@ object ActorConfigurationLoader {
             if (it.kotlin.hasAnnotation<ActorConfiguration>()) {
 
                 val configuration = it.kotlin.findAnnotations(ActorConfiguration::class).first()
-                val factory = it.kotlin.declaredFunctions.first {
-                    it.hasAnnotation<ActorFactory>()
-                }
+                val instance = it.kotlin.createInstance()
 
-                val storage = it.kotlin.declaredFunctions.first {
-                    it.hasAnnotation<ActorStore>()
+                if(instance is ActorConfigurationHandler) {
+                    Configuration(
+                        id = configuration.id,
+                        label = configuration.label,
+                        handler = instance
+                    )
+                } else {
+                    throw RuntimeException("Configuration must implement ActorConfigurationHandler")
                 }
-
-                Configuration(
-                    id = configuration.id,
-                    label = configuration.label,
-                    klass = it.kotlin,
-                    instance = it.kotlin.createInstance(),
-                    factory = factory,
-                    storage = storage
-                )
             } else {
                 null
             }
@@ -73,16 +62,14 @@ object ActorConfigurationLoader {
     data class Configuration(
         val id: String,
         val label: String,
-        private val factory: KFunction<*>,
-        private val storage: KFunction<*>,
-        private val instance: Any,
-        private val klass: KClass<*>) {
+        private val handler: ActorConfigurationHandler) {
+
             fun create(): Actor {
-                return factory.call(instance) as Actor
+                return handler.factory(null, null)
             }
 
             fun save(actor: Actor) {
-                storage.call(instance, actor)
+                handler.save(actor)
             }
     }
 }

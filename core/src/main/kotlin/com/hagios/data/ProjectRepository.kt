@@ -12,11 +12,11 @@ object ProjectRepository {
 
     fun create() {
         val statement = ConnectionMananger.createStatement()
-        statement.executeUpdate("CREATE TABLE IF NOT EXIST scene(id string, name string)")
-        statement.executeUpdate("CREATE TABLE IF NOT EXIST property(owner_id string, id string, name string, value string, type string)")
-        statement.executeUpdate("CREATE TABLE IF NOT EXIST property_list(property_id string, child_id string)")
-        statement.executeUpdate("CREATE TABLE IF NOT EXIST scene_level(scene_id string, level string, position integer)")
-        statement.executeUpdate("CREATE TABLE IF NOT EXIST scene_actor(scene_id string, actor_id string, type string, level string, zindex integer)")
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS scene(id string, name string)")
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS property(owner_id string, id string, name string, value string, type string)")
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS property_list(property_id string, child_id string)")
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS scene_level(scene_id string, level string, position integer)")
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS scene_actor(scene_id string, actor_id string, type string, level string, zindex integer)")
     }
 
     fun saveActor(actorEntity: ActorEntity) {

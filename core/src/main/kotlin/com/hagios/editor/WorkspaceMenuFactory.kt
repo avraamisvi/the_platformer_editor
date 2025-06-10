@@ -13,7 +13,7 @@ import ktx.scene2d.vis.popupMenu
 
 class WorkspaceMenuFactory {
 
-    private val configurations = ActorConfigurationLoader().actorsConfigurations
+    private val configurations = ActorConfigurationLoader.actorsConfigurations
 
     fun mainPopupMenu(level: EditingScene, selectedLayer: ()->String): PopupMenu {
         return scene2d.popupMenu {

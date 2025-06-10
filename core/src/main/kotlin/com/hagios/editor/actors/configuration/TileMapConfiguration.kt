@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 import com.hagios.data.ProjectRepository
 import com.hagios.data.model.ActorEntity
 import com.hagios.data.model.PropertyEntity
+import com.hagios.editor.actors.ActorConfigurationHandler
 import com.hagios.editor.actors.ActorData
 import com.hagios.editor.actors.ActorProperty
 import com.hagios.editor.actors.EditorActor
@@ -17,11 +18,10 @@ import com.hagios.editor.annotations.ActorStore
 import ktx.assets.toInternalFile
 
 @ActorConfiguration(id = "TileMap", label = "TileMap")
-class TileMapConfiguration {
+class TileMapConfiguration: ActorConfigurationHandler {
 
-    @ActorFactory
-    fun factory(entity: ActorEntity? = null,
-                properties: List<PropertyEntity>? = null): EditorTileMap {
+    override fun factory(entity: ActorEntity?,
+                properties: List<PropertyEntity>?): EditorTileMap {
 
         val actor = EditorTileMap(Texture("icons/tilemap.png".toInternalFile(), true)
             .apply { setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear) })
@@ -46,8 +46,7 @@ class TileMapConfiguration {
         return actor
     }
 
-    @ActorStore
-    fun save(actor: Actor) {
+    override fun save(actor: Actor) {
 //        entity: ActorEntity? = null,
 //        properties: List<PropertyEntity>? = null
 

@@ -61,17 +61,11 @@ class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), Ac
 
         layers = Array<TiledMapTileLayer>(map.getLayers().getCount())
 
-        val visibleLayersList: List<ActorProperty> = buildList {
-            map.layers.forEach {
-                require(it is TiledMapTileLayer)
-                layers!!.add(it)
-                val layerEntry = ActorProperty(it.name, ActorPropertyType.BOOL)
-                layerEntry.setValue(it.isVisible)
-                this.add(layerEntry)
-            }
+        map.layers.forEach {
+            require(it is TiledMapTileLayer)
+            layers!!.add(it)
         }
 
-        (this.userObject as ActorData).property(LAYERS)?.setValue(visibleLayersList)
         setSize(mapWidth.toFloat(), mapHeight.toFloat())
     }
 
@@ -252,23 +246,23 @@ class EditorTileMap(private val noTileMapTexture: Texture? = null) : Actor(), Ac
         }
     }
 
-    @PropertyGetter("map_path")
+    @PropertyGetter("map_path", ActorPropertyType.ASSET)
     fun getMapPath(): String {
         return mapPath
     }
 
     @Deprecated("this is too complex")
     override fun propertyChanged(property: ActorProperty) {
-        print(property.name)
-        if(property.name == MAP_PATH) {
-            ProjectResourceLoader.loadTileMap(property.asString())?.let {
-                loadFullMap(it)
-            }
-        } else if(property.name in layers.names()){
-            layers?.first { it.name == property.name }?.let {
-                it.isVisible = property.asBool()
-            }
-        }
+//        print(property.name)
+//        if(property.name == MAP_PATH) {
+//            ProjectResourceLoader.loadTileMap(property.asString())?.let {
+//                loadFullMap(it)
+//            }
+//        } else if(property.name in layers.names()){
+//            layers?.first { it.name == property.name }?.let {
+//                it.isVisible = property.asBool()
+//            }
+//        }
     }
 }
 

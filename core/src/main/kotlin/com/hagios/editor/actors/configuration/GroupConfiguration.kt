@@ -2,6 +2,9 @@ package com.hagios.editor.actors.configuration
 
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.hagios.data.model.ActorEntity
+import com.hagios.data.model.PropertyEntity
+import com.hagios.editor.actors.ActorConfigurationHandler
 import com.hagios.editor.actors.EditorActor
 import com.hagios.editor.actors.EditorGroup
 import com.hagios.editor.annotations.ActorConfiguration
@@ -10,9 +13,9 @@ import com.hagios.editor.annotations.ActorStore
 import ktx.assets.toInternalFile
 
 @ActorConfiguration(id = "Group", label = "Group")
-class GroupConfiguration {
-    @ActorFactory
-    fun factory(): EditorGroup {
+class GroupConfiguration: ActorConfigurationHandler {
+
+    override fun factory(entity: ActorEntity?, properties: List<PropertyEntity>?): Actor {
         val actor = EditorGroup(
             Texture("icons/group.png".toInternalFile(), true)
             .apply { setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear) })
@@ -21,8 +24,7 @@ class GroupConfiguration {
         return actor
     }
 
-    @ActorStore
-    fun save(actor: Actor) {
+    override fun save(actor: Actor) {
 //        entity: ActorEntity? = null,
 //        properties: List<PropertyEntity>? = null
 
